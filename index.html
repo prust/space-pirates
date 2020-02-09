@@ -9,8 +9,7 @@ document.body.style.margin = 0;
 var player = {
   x: 10,
   y: 10,
-  dx: 0,
-  dy: 0,
+  speed: 0,
   angle: 0
 };
 
@@ -54,39 +53,40 @@ document.addEventListener('keyup', function(event) {
 
 function update() {
   var max_speed = 10;
+  var min_speed = 0.1;
   var thrust_accel = 0.4;
   var coast_decel = 0.2;
-  var rotate_speed = 1;
+  var rotate_speed = 3;
 
-  // horizontal movement
   if (is_left_down)
     player.angle = player.angle + rotate_speed;
-
   if (is_right_down)
     player.angle = player.angle - rotate_speed;
 
   // thrust
   if (is_up_down) {
-    player.dx += Math.cos(toRad(player.angle)) * thrust_accel;
-    player.dy += -Math.sin(toRad(player.angle)) * thrust_accel;
-//    player.dy = player.dy - thrust_accel;
+    player.speed += thrust_accel;
   }
-  // else if (player.dy < 0)
-  //   player.dy = player.dy + coast_decel;
+  else if (is_down_down) { // reverse thrust
+    player.speed -= thrust_accel;
+  }
+  else { // friction deceleration
+    if (player.speed > 0)
+      player.speed -= coast_decel;
+    else if (player.speed < 0)
+      player.speed += coast_decel;
+  }
 
-  if (player.dx > max_speed)
-    player.dx = max_speed;
-  else if (player.dx < -max_speed)
-    player.dx = -max_speed;
+  if (player.speed > max_speed)
+    player.speed = max_speed;
+  else if (player.speed < -max_speed)
+    player.speed = -max_speed;
 
-  player.x = player.x + player.dx;
+  if (Math.abs(player.speed) < min_speed)
+    player.speed = 0;
 
-  if (player.dy > max_speed)
-    player.dy = max_speed;
-  else if (player.dy < -max_speed)
-    player.dy = -max_speed;
-
-  player.y = player.y + player.dy;  
+  player.x += Math.cos(toRad(player.angle)) * player.speed;
+  player.y += -Math.sin(toRad(player.angle)) * player.speed;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = 'blue';
