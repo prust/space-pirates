@@ -1,0 +1,118 @@
+<canvas id="canvas"></canvas>
+<script>
+var canvas = document.getElementById('canvas');
+var ctx = canvas.getContext('2d');
+canvas.width = document.body.clientWidth;
+canvas.height = document.body.clientHeight;
+document.body.style.margin = 0;
+
+var player = {
+  x: 10,
+  y: 10,
+  dx: 0,
+  dy: 0,
+  angle: 0
+};
+
+var left = 37;
+var right = 39;
+var up = 38;
+var down = 40;
+var w_key = 87;
+var a_key = 65;
+var s_key = 83;
+var d_key = 68;
+
+var is_left_down = false;
+var is_right_down = false;
+var is_up_down = false;
+var is_down_down = false;
+
+document.addEventListener('keydown', function(event) {
+  if (event.keyCode == left || event.keyCode == a_key)
+    is_left_down = true;
+  else if (event.keyCode == right || event.keyCode == d_key)
+    is_right_down = true;
+
+  if (event.keyCode == up || event.keyCode == w_key)
+    is_up_down = true;
+  else if (event.keyCode == down || event.keyCode == s_key)
+    is_down_down = true;
+});
+
+document.addEventListener('keyup', function(event) {
+  if (event.keyCode == left || event.keyCode == a_key)
+    is_left_down = false;
+  else if (event.keyCode == right || event.keyCode == d_key)
+    is_right_down = false;
+
+  if (event.keyCode == up || event.keyCode == w_key)
+    is_up_down = false;
+  else if (event.keyCode == down || event.keyCode == s_key)
+    is_down_down = false;
+});
+
+function update() {
+  var max_speed = 10;
+  var thrust_accel = 0.4;
+  var coast_decel = 0.2;
+  var rotate_speed = 1;
+
+  // horizontal movement
+  if (is_left_down)
+    player.angle = player.angle + rotate_speed;
+
+  if (is_right_down)
+    player.angle = player.angle - rotate_speed;
+
+  // thrust
+  if (is_up_down) {
+    player.dx += Math.cos(toRad(player.angle)) * thrust_accel;
+    player.dy += -Math.sin(toRad(player.angle)) * thrust_accel;
+//    player.dy = player.dy - thrust_accel;
+  }
+  // else if (player.dy < 0)
+  //   player.dy = player.dy + coast_decel;
+
+  if (player.dx > max_speed)
+    player.dx = max_speed;
+  else if (player.dx < -max_speed)
+    player.dx = -max_speed;
+
+  player.x = player.x + player.dx;
+
+  if (player.dy > max_speed)
+    player.dy = max_speed;
+  else if (player.dy < -max_speed)
+    player.dy = -max_speed;
+
+  player.y = player.y + player.dy;  
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = 'blue';
+  ctx.fillRect(player.x, player.y, 20, 20);
+
+  requestAnimationFrame(update);
+}
+
+requestAnimationFrame(update);
+
+// determines if the two objects overlap
+function collides(obj1, obj2) {
+  // calculate the x/y coordinates of the bottom-right corner for obj1
+  var obj1_x2 = obj1.x + obj1.w;
+  var obj1_y2 = obj1.y + obj1.h;
+
+  // calculate the x/y coordinates of the bottom-right corner for obj2
+  var obj2_x2 = obj2.x + obj2.w;
+  var obj2_y2 = obj2.y + obj2.h;
+
+  return obj1_x2 > obj2.x && obj1.x < obj2_x2 && // x-dimension overlap
+        obj1_y2 > obj2.y && obj1.y < obj2_y2; // y-dimension overlap
+}
+
+function toRad(deg) {
+  return deg * Math.PI / 180;
+}
+
+</script>
