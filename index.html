@@ -1,6 +1,5 @@
 <canvas id="canvas"></canvas>
 <script>
-
 var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext('2d');
 canvas.style.width = document.body.clientWidth + 'px';
@@ -11,7 +10,7 @@ canvas.height = document.body.clientHeight * scale;
 document.body.style.margin = 0;
 
 var player = {
-  x: 150,
+  x: 150 * scale,
   y: 10,
   speed: 0,
   angle: 0
