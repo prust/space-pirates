@@ -2,12 +2,15 @@
 <script>
 var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext('2d');
-canvas.width = document.body.clientWidth;
-canvas.height = document.body.clientHeight;
+canvas.style.width = document.body.clientWidth + 'px';
+canvas.style.height = document.body.clientHeight + 'px';
+var scale = window.devicePixelRatio; // force to 1 for blurry canvas on retina
+canvas.width = document.body.clientWidth * scale;
+canvas.height = document.body.clientHeight * scale;
 document.body.style.margin = 0;
 
 var player = {
-  x: 10,
+  x: 150,
   y: 10,
   speed: 0,
   angle: 0
@@ -26,6 +29,14 @@ var is_left_down = false;
 var is_right_down = false;
 var is_up_down = false;
 var is_down_down = false;
+
+var grid_w = 16;
+var grid_h = 16;
+var ship_img = new Image();
+ship_img.src = 'spaceship1-Sheet.png';
+ship_img.onload = function() {
+  requestAnimationFrame(update);
+};
 
 document.addEventListener('keydown', function(event) {
   if (event.keyCode == left || event.keyCode == a_key)
@@ -52,10 +63,10 @@ document.addEventListener('keyup', function(event) {
 });
 
 function update() {
-  var max_speed = 10;
-  var min_speed = 0.1;
-  var thrust_accel = 0.4;
-  var coast_decel = 0.2;
+  var max_speed = 10 * scale;
+  var min_speed = 0.1 * scale;
+  var thrust_accel = 0.4 * scale;
+  var coast_decel = 0.2 * scale;
   var rotate_speed = 3;
 
   if (is_left_down)
@@ -89,13 +100,20 @@ function update() {
   player.y += -Math.sin(toRad(player.angle)) * player.speed;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = 'blue';
-  ctx.fillRect(player.x, player.y, 20, 20);
+  var w = 3 * grid_w;
+  var h = 5 * grid_h;
+
+  ctx.save();
+  ctx.translate(player.x, player.y);
+  ctx.imageSmoothingEnabled = false;
+  ctx.rotate(-toRad(player.angle - 90));
+  ctx.drawImage(ship_img, 5 * grid_w, 5 * grid_h, w, h, 0, 0, w * 4, h * 4);
+  ctx.restore();
+  // ctx.fillStyle = 'blue';
+  // ctx.fillRect(player.x, player.y, 20, 20);
 
   requestAnimationFrame(update);
 }
-
-requestAnimationFrame(update);
 
 // determines if the two objects overlap
 function collides(obj1, obj2) {
