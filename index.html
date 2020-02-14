@@ -12,8 +12,8 @@ document.body.style.margin = 0;
 var player = {
   x: 150 * scale,
   y: 10,
-  speed: 0,
-  angle: 0
+  dx: 0,
+  dy: 0
 };
 
 var left = 37;
@@ -33,7 +33,7 @@ var is_down_down = false;
 var grid_w = 16;
 var grid_h = 16;
 var ship_img = new Image();
-ship_img.src = 'spaceship1-Sheet.png';
+ship_img.src = 'character-Sheet.png';
 ship_img.onload = function() {
   requestAnimationFrame(update);
 };
@@ -70,44 +70,54 @@ function update() {
   var rotate_speed = 3;
 
   if (is_left_down)
-    player.angle = player.angle + rotate_speed;
+    player.dx = player.dx - thrust_accel;
+  else if (player.dx < 0)
+    player.dx = player.dx + coast_decel;
+
   if (is_right_down)
-    player.angle = player.angle - rotate_speed;
+    player.dx = player.dx + thrust_accel;
+  else if (player.dx > 0)
+    player.dx = player.dx - coast_decel;
 
-  // thrust
-  if (is_up_down) {
-    player.speed += thrust_accel;
-  }
-  else if (is_down_down) { // reverse thrust
-    player.speed -= thrust_accel;
-  }
-  else { // friction deceleration
-    if (player.speed > 0)
-      player.speed -= coast_decel;
-    else if (player.speed < 0)
-      player.speed += coast_decel;
-  }
+  if (player.dx > max_speed)
+    player.dx = max_speed;
+  else if (player.dx < -max_speed)
+    player.dx = -max_speed;
 
-  if (player.speed > max_speed)
-    player.speed = max_speed;
-  else if (player.speed < -max_speed)
-    player.speed = -max_speed;
+  if (Math.abs(player.dx) < min_speed)
+    player.dx = 0;
 
-  if (Math.abs(player.speed) < min_speed)
-    player.speed = 0;
+  player.x = player.x + player.dx;
 
-  player.x += Math.cos(toRad(player.angle)) * player.speed;
-  player.y += -Math.sin(toRad(player.angle)) * player.speed;
+  if (is_up_down)
+    player.dy = player.dy - thrust_accel;
+  else if (player.dy < 0)
+    player.dy = player.dy + coast_decel;
+
+  if (is_down_down)
+    player.dy = player.dy + thrust_accel;
+  else if (player.dy > 0)
+    player.dy = player.dy - coast_decel;
+
+  if (player.dy > max_speed)
+    player.dy = max_speed;
+  else if (player.dy < -max_speed)
+    player.dy = -max_speed;
+
+  if (Math.abs(player.dy) < min_speed)
+    player.dy = 0;
+  
+  player.y = player.y + player.dy;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  var w = 3 * grid_w;
-  var h = 5 * grid_h;
+  var w = 1 * grid_w;
+  var h = 2 * grid_h;
 
   ctx.save();
   ctx.translate(player.x, player.y);
   ctx.imageSmoothingEnabled = false;
   ctx.rotate(-toRad(player.angle - 90));
-  ctx.drawImage(ship_img, 5 * grid_w, 5 * grid_h, w, h, 0, 0, w * 4, h * 4);
+  ctx.drawImage(ship_img, 0, 0, w, h, 0, 0, w * 4, h * 4);
   ctx.restore();
   // ctx.fillStyle = 'blue';
   // ctx.fillRect(player.x, player.y, 20, 20);
